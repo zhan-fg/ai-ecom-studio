@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: "Inter", system-ui, sans-serif;
+  --color-foreground: #171b24;
+  --color-muted-foreground: #6b7280;
+  --color-background: #faf9f7;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --color-foreground: #f8f4ee;
+    --color-muted-foreground: #9ca3af;
+    --color-background: #0f1117;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--color-foreground);
+  background: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom utility classes */
+.text-foreground {
+  color: var(--color-foreground);
+}
+.text-muted-foreground {
+  color: var(--color-muted-foreground);
+}
+.bg-background {
+  background: var(--color-background);
+}
+
+/* Glass card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 1.75rem;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #6366f1, #14b8a6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Press scale animation */
+.press-scale {
+  transition: transform 0.15s ease;
+}
+.press-scale:active {
+  transform: scale(0.97);
 }
