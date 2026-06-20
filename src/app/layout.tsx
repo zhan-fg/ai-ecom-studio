@@ -1,17 +1,36 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-display",
-});
-
 export const metadata: Metadata = {
-  title: "EcomStudio AI",
+  title: {
+    default: "EcomStudio AI",
+    template: "%s | EcomStudio AI",
+  },
   description:
     "AI Product Image Generator for Ecommerce Sellers — Create product images for Amazon, Shopify, TikTok Shop, Taobao, and more.",
+  metadataBase: new URL("https://ai-ecom-studio.vercel.app"),
+  openGraph: {
+    type: "website",
+    siteName: "EcomStudio AI",
+    title: "EcomStudio AI — AI Product Image Generator",
+    description:
+      "Create product images for Amazon, Shopify, TikTok Shop, Taobao, and ecommerce listings from product photos.",
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EcomStudio AI",
+    description:
+      "Create product images for Amazon, Shopify, TikTok Shop, Taobao, and ecommerce listings from product photos.",
+  },
   robots: { index: true, follow: true },
+  alternates: {
+    languages: {
+      en: "/en",
+      zh: "/zh",
+    },
+  },
 };
 
 export default function RootLayout({
@@ -21,7 +40,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`}>{children}</body>
+      <body className="antialiased">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }
