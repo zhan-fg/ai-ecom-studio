@@ -15,29 +15,32 @@ function getLocale(request: NextRequest): string {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip static files
   if (pathname.startsWith("/_next") || pathname.startsWith("/api") || pathname.startsWith("/static") || pathname.includes(".")) {
     return NextResponse.next();
   }
 
   let response = NextResponse.next({ request });
 
-  // Supabase: refresh session
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return request.cookies.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
+  // Supabase: refresh session (only if env vars are set)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const supabase = createServerClient(supabaseUrl, supabaseKey, {
+        cookies: {
+          getAll() { return request.cookies.getAll(); },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            );
+          },
         },
-      },
+      });
+      await supabase.auth.getUser();
+    } catch {
+      // Silently ignore — auth is optional
     }
-  );
-  await supabase.auth.getUser();
+  }
 
   // i18n: redirect to locale
   const pathnameHasLocale = locales.some((locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`);
@@ -49,7 +52,6 @@ export async function middleware(request: NextRequest) {
   const redirectResponse = NextResponse.redirect(newUrl);
   redirectResponse.cookies.set("NEXT_LOCALE", locale, { maxAge: 31536000, sameSite: "lax" });
 
-  // Copy any cookies Supabase set
   response.cookies.getAll().forEach((c) => redirectResponse.cookies.set(c.name, c.value, { ...c }));
   return redirectResponse;
 }
