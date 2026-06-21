@@ -4,47 +4,84 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-export async function signIn(formData: FormData) {
+function siteUrl(locale: string) {
+  return `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${locale}`;
+}
+
+// ── 邮箱 + 密码 注册 ──
+export async function signUp(formData: FormData) {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const locale = formData.get("locale") as string;
+
+  if (!email || !password) return { error: "Email and password are required" };
+  if (password.length < 6) return { error: "Password must be at least 6 characters" };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { emailRedirectTo: `${siteUrl(locale)}/ecom-studio` },
+  });
+
+  if (error) return { error: error.message };
+  return { success: true, message: "Check your email to confirm your account" };
+}
+
+// ── 邮箱 + 密码 登录 ──
+export async function signInWithPassword(formData: FormData) {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+
+  if (!email || !password) return { error: "Email and password are required" };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) return { error: error.message };
+  revalidatePath("/", "layout");
+  return { success: true };
+}
+
+// ── 邮箱 magic link 登录/注册（无需密码） ──
+export async function signInWithMagicLink(formData: FormData) {
   const email = formData.get("email") as string;
   const locale = formData.get("locale") as string;
-  if (!email) return;
+  if (!email) return { error: "Email is required" };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${locale}/ecom-studio`,
-    },
+    options: { emailRedirectTo: `${siteUrl(locale)}/ecom-studio` },
   });
 
   if (error) return { error: error.message };
-  return { success: true };
+  return { success: true, message: "Magic link sent — check your inbox" };
 }
 
+// ── Google ──
 export async function signInWithGoogle(locale: string) {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
-    options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${locale}/ecom-studio`,
-    },
+    options: { redirectTo: `${siteUrl(locale)}/ecom-studio` },
   });
   if (error) return { error: error.message };
   if (data.url) redirect(data.url);
 }
 
+// ── GitHub ──
 export async function signInWithGitHub(locale: string) {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "github",
-    options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${locale}/ecom-studio`,
-    },
+    options: { redirectTo: `${siteUrl(locale)}/ecom-studio` },
   });
   if (error) return { error: error.message };
   if (data.url) redirect(data.url);
 }
 
+// ── 退出 ──
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
