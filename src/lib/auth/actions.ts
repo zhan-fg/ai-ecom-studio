@@ -5,7 +5,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 function siteUrl(locale: string) {
-  return `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${locale}`;
+  // Vercel auto-injects VERCEL_URL, or use explicit SITE_URL, fallback to localhost
+  const host = process.env.NEXT_PUBLIC_SITE_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+    || "http://localhost:3000";
+  return `${host}/${locale}`;
 }
 
 async function getSupabase() {
