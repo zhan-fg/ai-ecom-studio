@@ -12,6 +12,11 @@ function siteUrl(locale: string) {
   return `${host}/${locale}`;
 }
 
+// Callback that exchanges the auth code for a session cookie
+function callbackUrl(locale: string) {
+  return `${siteUrl(locale)}/auth/callback?next=/${locale}/ecom-studio`;
+}
+
 async function getSupabase() {
   try {
     return await createClient();
@@ -34,7 +39,7 @@ export async function signUp(formData: FormData) {
 
   const { error } = await supabase.auth.signUp({
     email, password,
-    options: { emailRedirectTo: `${siteUrl(locale)}/ecom-studio` },
+    options: { emailRedirectTo: callbackUrl(locale) },
   });
 
   if (error) return { error: error.message };
@@ -67,7 +72,7 @@ export async function signInWithMagicLink(formData: FormData) {
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: `${siteUrl(locale)}/ecom-studio` },
+    options: { emailRedirectTo: callbackUrl(locale) },
   });
   if (error) return { error: error.message };
   return { success: true, message: "Magic link sent — check your inbox" };
@@ -79,7 +84,7 @@ export async function signInWithGoogle(locale: string) {
   if (!supabase) return { error: "Auth service not configured." };
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: `${siteUrl(locale)}/ecom-studio` },
+    options: { redirectTo: callbackUrl(locale) },
   });
   if (error) return { error: error.message };
   if (data.url) redirect(data.url);
@@ -91,7 +96,7 @@ export async function signInWithGitHub(locale: string) {
   if (!supabase) return { error: "Auth service not configured." };
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "github",
-    options: { redirectTo: `${siteUrl(locale)}/ecom-studio` },
+    options: { redirectTo: callbackUrl(locale) },
   });
   if (error) return { error: error.message };
   if (data.url) redirect(data.url);
