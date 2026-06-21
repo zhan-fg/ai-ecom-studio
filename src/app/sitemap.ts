@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { solutions } from "@/lib/solutions";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://ai-ecom-studio.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ai-ecom-studio.vercel.app";
 
   const marketingPages = [
     "",
