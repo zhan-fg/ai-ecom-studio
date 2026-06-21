@@ -7,13 +7,7 @@ export async function createClient() {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    // Return a dummy client when env vars aren't set
-    return {
-      auth: {
-        getUser: async () => ({ data: { user: null }, error: null }),
-        signOut: async () => ({ error: null }),
-      },
-    } as unknown as ReturnType<typeof createServerClient>;
+    throw new Error("Supabase not configured: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY");
   }
 
   return createServerClient(url, key, {
